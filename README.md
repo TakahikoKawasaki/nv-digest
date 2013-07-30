@@ -40,7 +40,7 @@ Example
 
     String digest = Digest.getInstanceSHA1()
                     .update("Hello, world.")
-		    .digestAsString();
+                    .digestAsString();
 
     // digest holds "2ae01472317d1935a84797ec1983ae243fc6aa28".
 
