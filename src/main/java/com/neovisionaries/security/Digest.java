@@ -17,12 +17,16 @@ package com.neovisionaries.security;
 
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -1274,6 +1278,202 @@ public class Digest implements Cloneable
      * given input data.
      *
      * <p>
+     * This method checks the class of the given instance and
+     * calls a corresponding {@code update} method.
+     * </p>
+     *
+     * <table border="1" cellpadding="5" style="margin: 1em; border-collapse: collapse;">
+     *   <tr bgcolor="orange">
+     *     <th>Class</th>
+     *     <th>Executed code</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code Byte}</td>
+     *     <td>{@link #update(byte) update}{@code (((Byte)number).byteValue())}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code Short}</td>
+     *     <td>{@link #update(short) update}{@code (((Short)number).shortValue())}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code Integer}</td>
+     *     <td>{@link #update(int) update}{@code (((Integer)number).intValue())}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code Long}</td>
+     *     <td>{@link #update(long) update}{@code (((Long)number).longValue())}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code Float}</td>
+     *     <td>{@link #update(float) update}{@code (((Float)number).floatValue())}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code Double}</td>
+     *     <td>{@link #update(double) update}{@code (((Double)number).doubleValue())}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code BigInteger}</td>
+     *     <td>{@link #update(byte[]) update}{@code (((BigInteger)number).toByteArray())}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code BigDecimal}</td>
+     *     <td>{@link #update(String) update}{@code (((BigDecimal)number).toString())}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code AtomicInteger}</td>
+     *     <td>{@link #update(int) update}{@code (((AtomicInteger)number).intValue())}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code AtomicLong}</td>
+     *     <td>{@link #update(long) update}{@code (((AtomicLong)number).longValue())}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>Others</td>
+     *     <td>Ignored.</td>
+     *   </tr>
+     * </table>
+     *
+     * @param number
+     *         Input data. If null or none of the above, update is not performed.
+     *
+     * @return
+     *         {@code this} object.
+     */
+    public Digest update(Number number)
+    {
+        if (number == null)
+        {
+            return this;
+        }
+
+        // Byte
+        if (number instanceof Byte)
+        {
+            update(((Byte)number).byteValue());
+        }
+        // Short
+        else if (number instanceof Short)
+        {
+            update(((Short)number).shortValue());
+        }
+        // Integer
+        else if (number instanceof Integer)
+        {
+            update(((Integer)number).intValue());
+        }
+        // Long
+        else if (number instanceof Long)
+        {
+            update(((Long)number).longValue());
+        }
+        // Float
+        else if (number instanceof Float)
+        {
+            update(((Float)number).floatValue());
+        }
+        // Double
+        else if (number instanceof Double)
+        {
+            update(((Double)number).doubleValue());
+        }
+        // BigInteger
+        else if (number instanceof BigInteger)
+        {
+            update(((BigInteger)number).toByteArray());
+        }
+        // BigDecimal
+        else if (number instanceof BigDecimal)
+        {
+            update(((BigDecimal)number).toString());
+        }
+        // AtomicInteger
+        else if (number instanceof AtomicInteger)
+        {
+            update(((AtomicInteger)number).intValue());
+        }
+        // AtomicLong
+        else if (number instanceof AtomicLong)
+        {
+            update(((AtomicLong)number).longValue());
+        }
+
+        return this;
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
+     * <p>
+     * This method is an alias of {@link #update(Number[], int, int)
+     * update}{@code (input, 0, input.length)}.
+     * </p>
+     *
+     * @param input
+     *         Input data. If null is given, update is not performed.
+     *
+     * @return
+     *         {@code this} object.
+     */
+    public <TNumber extends Number> Digest update(TNumber[] input)
+    {
+        if (input == null)
+        {
+            return this;
+        }
+
+        return update(input, 0, input.length);
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
+     * <p>
+     * This method calls {@link #update(Number)} for each
+     * array element which is in the specified range.
+     * </p>
+     *
+     * @param input
+     *         Input data.
+     *
+     * @param offset
+     *         The offset to start from in the array.
+     *
+     * @param length
+     *         The number of elements to use, starting at offset.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @throws IllegalArgumentException
+     *         The range specified by the parameters is invalid.
+     */
+    public <TNumber extends Number> Digest update(TNumber[] input, int offset, int length)
+    {
+        if (input == null)
+        {
+            return this;
+        }
+
+        checkRange(input.length, offset, length);
+
+        for (int i = 0; i < length; ++i)
+        {
+            update((Number)input[i + offset]);
+        }
+
+        return this;
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
+     * <p>
      * This method converts the given string into bytes with the
      * character set of UTF-8 and then passes the byte array to
      * {@link #update(byte[])}.
@@ -1366,6 +1566,90 @@ public class Digest implements Cloneable
         for (int i = 0; i < length; ++i)
         {
             update(input[i + offset]);
+        }
+
+        return this;
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
+     * <p>
+     * This method checks the class of each element and calls
+     * a corresponding {@code update} method.
+     * </p>
+     *
+     * <table border="1" cellpadding="5" style="margin: 1em; border-collapse: collapse;">
+     *   <tr bgcolor="orange">
+     *     <th>Class of element</th>
+     *     <th>Executed code</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code String}</td>
+     *     <td>{@link #update(String) update}{@code ((String)element)}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code Number}</td>
+     *     <td>{@link #update(Number) update}{@code ((Number)element)}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code Boolean}</td>
+     *     <td>{@link #update(boolean) update}{@code (((Boolean)element).booleanValue())}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code Character}</td>
+     *     <td>{@link #update(char) update}{@code (((Character)element).charValue())}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>Others</td>
+     *     <td>Ignored.</td>
+     *   </tr>
+     * </table>
+     *
+     * @param input
+     *         Input data. If null is given, update is not performed.
+     *         null elements are ignored. Elements of unsupported classes
+     *         are ignored, too.
+     *
+     * @return
+     *         {@code this} object.
+     */
+    public Digest update(Iterable<?> input)
+    {
+        if (input == this)
+        {
+            return this;
+        }
+
+        for (Object element : input)
+        {
+            if (element == null)
+            {
+                continue;
+            }
+
+            // String
+            if (element instanceof String)
+            {
+                update((String)element);
+            }
+            // Number
+            else if (element instanceof Number)
+            {
+                update((Number)element);
+            }
+            // Boolean
+            else if (element instanceof Boolean)
+            {
+                update(((Boolean)element).booleanValue());
+            }
+            // Character
+            else if (element instanceof Character)
+            {
+                update(((Character)element).charValue());
+            }
         }
 
         return this;
