@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Neo Visionaries Inc.
+ * Copyright (C) 2013-2014 Neo Visionaries Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.neovisionaries.security;
 
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -25,6 +26,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -36,7 +38,11 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * <p>
  * {@code update} methods are provided for all the primitive types
- * and {@code String}, and their array types.
+ * and {@code String}, and their array types. In addition,
+ * {@link #updateJson(String)} has been available since the version
+ * 1.1 which update the digest with the content of the given JSON.
+ * Note that {@link #update(String)} and {@link #updateJson(String)}
+ * are different.
  * </p>
  *
  * <p>
@@ -48,21 +54,92 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * <pre style="background-color: #EEEEEE; margin-left: 2em; margin-right: 2em; border: 1px solid black;">
  * String digest = Digest.{@link #getInstanceSHA1()}
- *                 .{@link #update(String) update}("Hello, world.")
+ *                 .{@link #update(String) update}(<span style="color: #990000">"Hello, world."</span>)
  *                 .{@link #digestAsString()};
  *
  * <span style="color: darkgreen;">// digest holds "2ae01472317d1935a84797ec1983ae243fc6aa28".</span>
+ *
+ * String json1 = <span style="color: #990000">"{ \"key1\":\"value1\", \"key2\":\"value2\" }"</span>;
+ * String json2 = <span style="color: #990000">"{ \"key2\":\"value2\", \"key1\":\"value1\" }"</span>;
+ * String result1 = Digest.{@link #getInstanceSHA1()}.{@link #updateJson(String)
+ * updateJson}(json1);
+ * String result2 = Digest.{@link #getInstanceSHA1()}.{@link #updateJson(String)
+ * updateJson}(json2);
+ *
+ * <span style="color: darkgreen;">// result1 and result2 have the same value.</span>
  * <pre>
  *
  * @author Takahiko Kawasaki
  */
 public class Digest implements Cloneable
 {
+    /**
+     * Features to control behaviors.
+     *
+     * @since 1.1
+     */
+    public static enum Feature
+    {
+        /**
+         * Ignore JSON key-value entries whose value is null.
+         * In other words, treat JSON key-value entries whose
+         * value is null as if they did not exist.
+         *
+         * <p>
+         * If this feature is enabled, two JSONs below generate
+         * the same digest value.
+         * </p>
+         *
+         * <pre>
+         * { "key1":"value1", "key2":null }
+         * { "key1":"value1" }
+         * </pre>
+         *
+         * <p>
+         * The default value is 'disabled'.
+         * </p>
+         */
+        IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_NULL,
+
+
+        /**
+         * Sort keys of JSON key-value entries before updating.
+         *
+         * <p>
+         * If this feature is enabled, two JSONs below generate
+         * the same digest value.
+         * </p>
+         *
+         * <pre>
+         * { "key1":"value1", "key2":"value2" }
+         * { "key2":"value2", "key1":"value1" }
+         * </pre>
+         *
+         * <p>
+         * The default value is 'enabled'.
+         * </p>
+         */
+        SORT_JSON_OBJECT_ENTRY_KEYS
+    }
+
+
+    /**
+     * Characters used to generate a hex string.
+     */
     private static final char[] mHexArray = {
         '0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f' };
 
 
+    /**
+     * The wrapped messaged digest object.
+     */
     private MessageDigest mMessageDigest;
+
+
+    /**
+     * Features (configuration).
+     */
+    private HashMap<Feature, Boolean> mFeatures;
 
 
     /**
@@ -83,6 +160,96 @@ public class Digest implements Cloneable
         }
 
         mMessageDigest = messageDigest;
+        mFeatures = createFeatureMap();
+    }
+
+
+    private HashMap<Feature, Boolean> createFeatureMap()
+    {
+        HashMap<Feature, Boolean> map = new HashMap<Feature, Boolean>();
+
+        map.put(Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_NULL, Boolean.FALSE);
+        map.put(Feature.SORT_JSON_OBJECT_ENTRY_KEYS, Boolean.TRUE);
+
+        return map;
+    }
+
+
+    /**
+     * Constructor with an algorithm name.
+     *
+     * <p>
+     * This constructor is equivalent to {@link #Digest(MessageDigest) this}{@code
+     * (}{@link MessageDigest#getInstance(String) MessageDigest.getInstance}{@code
+     * (algorithm))}.
+     * </p>
+     *
+     * @param algorithm
+     *         Algorithm name such as "MD5" and "SHA-1".
+     *
+     * @throws NoSuchAlgorithmException
+     *         No provider supports the specified algorithm.
+     *
+     * @since 1.1
+     */
+    public Digest(String algorithm) throws NoSuchAlgorithmException
+    {
+        this(MessageDigest.getInstance(algorithm));
+    }
+
+
+    /**
+     * Constructor with an algorithm name and a provider.
+     *
+     * <p>
+     * This constructor is equivalent to {@link #Digest(MessageDigest) this}{@code
+     * (}{@link MessageDigest#getInstance(String,String) MessageDigest.getInstance}{@code
+     * (algorithm, provider))}.
+     * </p>
+     *
+     * @param algorithm
+     *         Algorithm name such as "MD5" and "SHA-1".
+     *
+     * @param provider
+     *         Provider name.
+     *
+     * @throws NoSuchAlgorithmException
+     *         The provider does not support the specified algorithm.
+     *
+     * @throws NoSuchProviderException
+     *         The specified provider is not registered in the security provider list.
+     *
+     * @since 1.1
+     */
+    public Digest(String algorithm, String provider) throws NoSuchAlgorithmException, NoSuchProviderException
+    {
+        this(MessageDigest.getInstance(algorithm, provider));
+    }
+
+
+    /**
+     * Constructor with an algorithm name and a provider.
+     *
+     * <p>
+     * This constructor is equivalent to {@link #Digest(MessageDigest) this}{@code
+     * (}{@link MessageDigest#getInstance(String,Provider) MessageDigest.getInstance}{@code
+     * (algorithm, provider))}.
+     * </p>
+     *
+     * @param algorithm
+     *         Algorithm name such as "MD5" and "SHA-1".
+     *
+     * @param provider
+     *         Provider.
+     *
+     * @throws NoSuchAlgorithmException
+     *         The provider does not support the specified algorithm.
+     *
+     * @since 1.1
+     */
+    public Digest(String algorithm, Provider provider) throws NoSuchAlgorithmException
+    {
+        this(MessageDigest.getInstance(algorithm, provider));
     }
 
 
@@ -106,9 +273,7 @@ public class Digest implements Cloneable
      */
     public static Digest getInstance(String algorithm) throws NoSuchAlgorithmException
     {
-        MessageDigest md = MessageDigest.getInstance(algorithm);
-
-        return new Digest(md);
+        return new Digest(algorithm);
     }
 
 
@@ -139,9 +304,7 @@ public class Digest implements Cloneable
     public static Digest getInstance(String algorithm, String provider)
             throws NoSuchAlgorithmException, NoSuchProviderException
     {
-        MessageDigest md = MessageDigest.getInstance(algorithm, provider);
-
-        return new Digest(md);
+        return new Digest(algorithm, provider);
     }
 
 
@@ -168,9 +331,7 @@ public class Digest implements Cloneable
      */
     public static Digest getInstance(String algorithm, Provider provider) throws NoSuchAlgorithmException
     {
-        MessageDigest md = MessageDigest.getInstance(algorithm, provider);
-
-        return new Digest(md);
+        return new Digest(algorithm, provider);
     }
 
 
@@ -297,7 +458,7 @@ public class Digest implements Cloneable
      * This method just calls {@link MessageDigest#getDigestLength()
      * getDigestLength()} of the wrapped {@code MessageDigest} instance.
      * </p>
-     * 
+     *
      * @return
      *         Length of the digest in bytes.
      */
@@ -346,14 +507,14 @@ public class Digest implements Cloneable
      * @throws CloneNotSupportedException
      *         The implementation does not support {@code clone} operation.
      */
+    @SuppressWarnings("unchecked")
     @Override
     public Object clone() throws CloneNotSupportedException
     {
         Digest cloned = (Digest)super.clone();
 
-        MessageDigest clonedMD = (MessageDigest)mMessageDigest.clone();
-
-        cloned.mMessageDigest = clonedMD;
+        cloned.mMessageDigest = (MessageDigest)mMessageDigest.clone();
+        cloned.mFeatures      = (HashMap<Feature, Boolean>)mFeatures.clone();
 
         return cloned;
     }
@@ -414,7 +575,7 @@ public class Digest implements Cloneable
      *         Output buffer for the computed digest.
      *
      * @param offset
-     *         Offset into the output buffer to begin storing the digest. 
+     *         Offset into the output buffer to begin storing the digest.
      *
      * @param length
      *         Number of bytes within the output buffer allotted for the digest.
@@ -434,7 +595,7 @@ public class Digest implements Cloneable
      *
      * <p>
      * This method calls {@link #digest()} method and converts the result
-     * to a String object. 
+     * to a String object.
      * </p>
      *
      * @return
@@ -453,7 +614,7 @@ public class Digest implements Cloneable
      *
      * <p>
      * This method calls {@link #digest(byte[])} method and converts
-     * the result to a String object. 
+     * the result to a String object.
      * </p>
      *
      * @return
@@ -1462,7 +1623,7 @@ public class Digest implements Cloneable
 
         for (int i = 0; i < length; ++i)
         {
-            update((Number)input[i + offset]);
+            update(input[i + offset]);
         }
 
         return this;
@@ -1651,6 +1812,102 @@ public class Digest implements Cloneable
                 update(((Character)element).charValue());
             }
         }
+
+        return this;
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
+     * <p>
+     * This method is different from {@link #update(String)}.
+     * JSONs with the same content, for example, two JSONs below,
+     * generate the same digest.
+     * </p>
+     *
+     * <pre>
+     * { "key1":"value1", "key2":"value2" }
+     * { "key1" : "value1" , "key2" : "value2" }
+     * </pre>
+     *
+     * <p>
+     * If {@link Feature#IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_NULL}
+     * is enabled (it is disabled by default), key-value entries
+     * with value 'null' are treated as if they did not exist.
+     * Therefore, two JSONs below generate the same digest value.
+     * </p>
+     *
+     * <pre>
+     * { "key1":"value1", "key2":null }
+     * { "key1":"value1" }
+     * </pre>
+     *
+     * <p>
+     * If {@link Feature#SORT_JSON_OBJECT_ENTRY_KEYS} is enabled
+     * (it is enabled by default), orders of JSON object keys do
+     * not matter. Therefore, two JSONs below generate the same
+     * digest value.
+     * </p>
+     *
+     * <pre>
+     * { "key1":"value1", "key2":"value2" }
+     * { "key2":"value2", "key1":"value1" }
+     * </pre>
+     *
+     * @param json
+     *         JSON.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @throws IOException
+     *         Failed to parse the given JSON.
+     *
+     * @since 1.1
+     */
+    public Digest updateJson(String json) throws IOException
+    {
+        return new JsonDigestUpdater().update(this, json);
+    }
+
+
+    /**
+     * Check if the specified feature is enabled.
+     *
+     * @param feature
+     *         Feature to check.
+     *
+     * @return
+     *         {@code true} if the feature is enabled. Otherwise, {@code false}.
+     *
+     * @since 1.1
+     */
+    public boolean isEnabled(Feature feature)
+    {
+        return mFeatures.get(feature).booleanValue();
+    }
+
+
+    /**
+     * Enable or disable the specified feature.
+     *
+     * @param feature
+     *         {@link Feature} to enable or disable.
+     *
+     * @param enabled
+     *         {@code true} to enable the feature.
+     *         {@code false} to disable the feature.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.1
+     */
+    public Digest setEnabled(Feature feature, boolean enabled)
+    {
+        mFeatures.put(feature, Boolean.valueOf(enabled));
 
         return this;
     }

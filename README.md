@@ -44,6 +44,13 @@ Example
 
     // digest holds "2ae01472317d1935a84797ec1983ae243fc6aa28".
 
+    String json1 = "{ \"key1\":\"value1\", \"key2\":\"value2\" }";
+    String json2 = "{ \"key2\":\"value2\", \"key1\":\"value1\" }";
+    String result1 = Digest.getInstanceSHA1().updateJson(json1);
+    String result2 = Digest.getInstanceSHA1().updateJson(json2);
+
+    // result1 and result2 have the same value.
+
 
 Maven
 -----
@@ -51,7 +58,7 @@ Maven
     <dependency>
         <groupId>com.neovisionaries</groupId>
         <artifactId>nv-digest</artifactId>
-        <version>1.0</version>
+        <version>1.1</version>
     </dependency>
 
 
