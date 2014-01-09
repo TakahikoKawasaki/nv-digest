@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * {@code update} methods are provided for all the primitive types
  * and {@code String}, and their array types. In addition,
  * {@link #updateJson(String)} has been available since the version
- * 1.1 which update the digest with the content of the given JSON.
+ * 1.2 which updates the digest with the content of the given JSON.
  * Note that {@link #update(String)} and {@link #updateJson(String)}
  * are different.
  * </p>
@@ -76,7 +76,7 @@ public class Digest implements Cloneable
     /**
      * Features to control behaviors.
      *
-     * @since 1.1
+     * @since 1.2
      */
     public static enum Feature
     {
@@ -164,6 +164,9 @@ public class Digest implements Cloneable
     }
 
 
+    /**
+     * Create a feature map with default values.
+     */
     private HashMap<Feature, Boolean> createFeatureMap()
     {
         HashMap<Feature, Boolean> map = new HashMap<Feature, Boolean>();
@@ -190,7 +193,7 @@ public class Digest implements Cloneable
      * @throws NoSuchAlgorithmException
      *         No provider supports the specified algorithm.
      *
-     * @since 1.1
+     * @since 1.2
      */
     public Digest(String algorithm) throws NoSuchAlgorithmException
     {
@@ -219,7 +222,7 @@ public class Digest implements Cloneable
      * @throws NoSuchProviderException
      *         The specified provider is not registered in the security provider list.
      *
-     * @since 1.1
+     * @since 1.2
      */
     public Digest(String algorithm, String provider) throws NoSuchAlgorithmException, NoSuchProviderException
     {
@@ -245,7 +248,7 @@ public class Digest implements Cloneable
      * @throws NoSuchAlgorithmException
      *         The provider does not support the specified algorithm.
      *
-     * @since 1.1
+     * @since 1.2
      */
     public Digest(String algorithm, Provider provider) throws NoSuchAlgorithmException
     {
@@ -1499,6 +1502,8 @@ public class Digest implements Cloneable
      *
      * @return
      *         {@code this} object.
+     *
+     * @since 1.1
      */
     public Digest update(Number number)
     {
@@ -1576,6 +1581,8 @@ public class Digest implements Cloneable
      *
      * @return
      *         {@code this} object.
+     *
+     * @since 1.1
      */
     public <TNumber extends Number> Digest update(TNumber[] input)
     {
@@ -1611,6 +1618,8 @@ public class Digest implements Cloneable
      *
      * @throws IllegalArgumentException
      *         The range specified by the parameters is invalid.
+     *
+     * @since 1.1
      */
     public <TNumber extends Number> Digest update(TNumber[] input, int offset, int length)
     {
@@ -1776,6 +1785,8 @@ public class Digest implements Cloneable
      *
      * @return
      *         {@code this} object.
+     *
+     * @since 1.1
      */
     public Digest update(Iterable<?> input)
     {
@@ -1819,10 +1830,11 @@ public class Digest implements Cloneable
 
     /**
      * Update the wrapped {@code MessageDigest} object with the
-     * given input data.
+     * given JSON. This method updates the digest based on the
+     * content of the given JSON, and in the respect, this method
+     * is different from {@link #update(String)}.
      *
      * <p>
-     * This method is different from {@link #update(String)}.
      * JSONs with the same content, for example, two JSONs below,
      * generate the same digest.
      * </p>
@@ -1865,7 +1877,7 @@ public class Digest implements Cloneable
      * @throws IOException
      *         Failed to parse the given JSON.
      *
-     * @since 1.1
+     * @since 1.2
      */
     public Digest updateJson(String json) throws IOException
     {
@@ -1882,7 +1894,7 @@ public class Digest implements Cloneable
      * @return
      *         {@code true} if the feature is enabled. Otherwise, {@code false}.
      *
-     * @since 1.1
+     * @since 1.2
      */
     public boolean isEnabled(Feature feature)
     {
@@ -1903,7 +1915,7 @@ public class Digest implements Cloneable
      * @return
      *         {@code this} object.
      *
-     * @since 1.1
+     * @since 1.2
      */
     public Digest setEnabled(Feature feature, boolean enabled)
     {

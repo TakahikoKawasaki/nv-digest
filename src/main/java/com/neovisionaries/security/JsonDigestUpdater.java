@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Takahiko Kawasaki
  *
- * @since 1.1
+ * @since 1.2
  */
 class JsonDigestUpdater
 {

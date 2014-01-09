@@ -58,7 +58,7 @@ Maven
     <dependency>
         <groupId>com.neovisionaries</groupId>
         <artifactId>nv-digest</artifactId>
-        <version>1.1</version>
+        <version>1.2</version>
     </dependency>
 
 
