@@ -28,10 +28,10 @@ Download
     git clone https://github.com/TakahikoKawasaki/nv-digest.git
 
 
-Javadoc
+JavaDoc
 -------
 
-[nv-digest javadoc](http://TakahikoKawasaki.github.com/nv-digest/)
+[nv-digest JavaDoc](http://TakahikoKawasaki.github.com/nv-digest/)
 
 
 
@@ -46,8 +46,8 @@ Example
 
     String json1 = "{ \"key1\":\"value1\", \"key2\":\"value2\" }";
     String json2 = "{ \"key2\":\"value2\", \"key1\":\"value1\" }";
-    String result1 = Digest.getInstanceSHA1().updateJson(json1);
-    String result2 = Digest.getInstanceSHA1().updateJson(json2);
+    String result1 = Digest.getInstanceSHA1().updateJson(json1).digestAsString();
+    String result2 = Digest.getInstanceSHA1().updateJson(json2).digestAsString();
 
     // result1 and result2 have the same value.
 

@@ -62,9 +62,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * String json1 = <span style="color: #990000">"{ \"key1\":\"value1\", \"key2\":\"value2\" }"</span>;
  * String json2 = <span style="color: #990000">"{ \"key2\":\"value2\", \"key1\":\"value1\" }"</span>;
  * String result1 = Digest.{@link #getInstanceSHA1()}.{@link #updateJson(String)
- * updateJson}(json1);
+ * updateJson}(json1).{@link #digestAsString()};
  * String result2 = Digest.{@link #getInstanceSHA1()}.{@link #updateJson(String)
- * updateJson}(json2);
+ * updateJson}(json2).{@link #digestAsString()};
  *
  * <span style="color: darkgreen;">// result1 and result2 have the same value.</span>
  * <pre>
