@@ -41,18 +41,25 @@ Example
 -------
 
 ```java
+// Compute SHA-1 of "Hello, world.".
+// 'digest' will have "2ae01472317d1935a84797ec1983ae243fc6aa28".
 String digest = Digest.getInstanceSHA1()
                 .update("Hello, world.")
                 .digestAsString();
 
-// digest holds "2ae01472317d1935a84797ec1983ae243fc6aa28".
+// Compute SHA-1 of "Hello, world." and ge the result as Base64.
+// 'digest' will have "KuAUcjF9GTWoR5fsGYOuJD/Gqig=".
+String digest = Digest.getInstanceSHA1()
+                .update("Hello, world.")
+                .digestAsString(new Base64());
 
+
+// Compute SHA-1 of two JSONs.
+// 'result1' and 'result2' will have the same value.
 String json1 = "{ \"key1\":\"value1\", \"key2\":\"value2\" }";
 String json2 = "{ \"key2\":\"value2\", \"key1\":\"value1\" }";
 String result1 = Digest.getInstanceSHA1().updateJson(json1).digestAsString();
 String result2 = Digest.getInstanceSHA1().updateJson(json2).digestAsString();
-
-// result1 and result2 have the same value.
 ```
 
 
@@ -63,7 +70,7 @@ Maven
 <dependency>
     <groupId>com.neovisionaries</groupId>
     <artifactId>nv-digest</artifactId>
-    <version>1.2</version>
+    <version>1.3</version>
 </dependency>
 ```
 
