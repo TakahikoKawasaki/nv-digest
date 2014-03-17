@@ -29,6 +29,8 @@ import java.security.Provider;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import org.apache.commons.codec.BinaryEncoder;
+import org.apache.commons.codec.EncoderException;
 
 
 /**
@@ -53,21 +55,29 @@ import java.util.concurrent.atomic.AtomicLong;
  * </p>
  *
  * <pre style="background-color: #EEEEEE; margin-left: 2em; margin-right: 2em; border: 1px solid black;">
+ * <span style="color: darkgreen;">
+ * // Compute SHA-1 of "Hello, world.".
+ * // 'digest' will have "2ae01472317d1935a84797ec1983ae243fc6aa28".</span>
  * String digest = Digest.{@link #getInstanceSHA1()}
  *                 .{@link #update(String) update}(<span style="color: #990000">"Hello, world."</span>)
  *                 .{@link #digestAsString()};
  *
- * <span style="color: darkgreen;">// digest holds "2ae01472317d1935a84797ec1983ae243fc6aa28".</span>
+ * <span style="color: darkgreen;">// Compute SHA-1 of "Hello, world." and get the result as Base64.
+ * // 'digest' will have "KuAUcjF9GTWoR5fsGYOuJD/Gqig=".</span>
+ * String digest = Digest.{@link #getInstanceSHA1()}
+ *                 .{@link #update(String) update}(<span style="color: #990000">"Hello, world."</span>)
+ *                 .{@link #digestAsString(BinaryEncoder) digestAsString}(new {@link
+ *                 org.apache.commons.codec.binary.Base64#Base64() Base64()});
  *
+ * <span style="color: darkgreen;">// Compute SHA-1 of two JSONs.
+ * // 'result1' and 'result2' will have the same value.</span>
  * String json1 = <span style="color: #990000">"{ \"key1\":\"value1\", \"key2\":\"value2\" }"</span>;
  * String json2 = <span style="color: #990000">"{ \"key2\":\"value2\", \"key1\":\"value1\" }"</span>;
  * String result1 = Digest.{@link #getInstanceSHA1()}.{@link #updateJson(String)
  * updateJson}(json1).{@link #digestAsString()};
  * String result2 = Digest.{@link #getInstanceSHA1()}.{@link #updateJson(String)
  * updateJson}(json2).{@link #digestAsString()};
- *
- * <span style="color: darkgreen;">// result1 and result2 have the same value.</span>
- * <pre>
+ * </pre>
  *
  * @author Takahiko Kawasaki
  */
@@ -620,12 +630,111 @@ public class Digest implements Cloneable
      * the result to a String object.
      * </p>
      *
+     * @param input
+     *         Byte array used for the last update.
+     *
      * @return
      *         The result hash value represented in a hex String.
      */
     public String digestAsString(byte[] input)
     {
         return bytesToHex(digest(input));
+    }
+
+
+    /**
+     * Complete the hash computation and get the resulting hash value
+     * as a string. The given encoder is used to convert the digest
+     * value to a string.
+     *
+     * <p>
+     * This method is an alias of {@link #digestAsString(byte[],
+     * BinaryEncoder) digestAsString((byte[])null, encoder)}.
+     * </p>
+     *
+     * @param encoder
+     *         Encoder to convert a digest value to a byte array
+     *         whose elements are printable characters. For example,
+     *         {@link org.apache.commons.codec.binary.Base64}.
+     *
+     * @return
+     *         The result hash value encoded by the encoder.
+     *
+     * @throws RuntimeException
+     *         If the encoder throws {@link EncoderException},
+     *         a {@code RuntimeException} wrapping the
+     *         {@code EncoderException} is thrown.
+     *
+     * @since 1.3
+     */
+    public String digestAsString(BinaryEncoder encoder)
+    {
+        return digestAsString((byte[])null, encoder);
+    }
+
+
+    /**
+     * Perform the final update with the given byte array, and then
+     * complete the hash computation and get the resulting hash value
+     * as a string. The given encoder is used to convert the digest
+     * value to a string.
+     *
+     * @param input
+     *         Byte array used for the last update. If {@code null}
+     *         is given, it is just ignored.
+     *
+     * @param encoder
+     *         Encoder to convert a digest value to a byte array
+     *         whose elements are printable characters. For example,
+     *         {@link org.apache.commons.codec.binary.Base64}.
+     *
+     * @return
+     *         The result hash value encoded by the encoder.
+     *
+     * @throws IllegalArgumentException
+     *         {@code encoder} is {@code null}.
+     *
+     * @throws RuntimeException
+     *         If the encoder throws {@link EncoderException},
+     *         a {@code RuntimeException} wrapping the
+     *         {@code EncoderException} is thrown.
+     *
+     * @since 1.3
+     */
+    public String digestAsString(byte[] input, BinaryEncoder encoder)
+    {
+        if (encoder == null)
+        {
+            throw new IllegalArgumentException("encoder is null.");
+        }
+
+        // Compute the digest value.
+        byte[] digest = (input != null) ? digest(input) : digest();
+
+        // Encoded value.
+        byte[] encoded = null;
+
+        try
+        {
+            // Encode the digest value.
+            encoded = encoder.encode(digest);
+        }
+        catch (EncoderException e)
+        {
+            // Failed to encode the digest value.
+            throw new RuntimeException("Failed to encode the digest value.", e);
+        }
+
+        try
+        {
+            // Convert the byte array into a string.
+            return new String(encoded, "UTF-8");
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            // This won't happen.
+            return null;
+        }
     }
 
 

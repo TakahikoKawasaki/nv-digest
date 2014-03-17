@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
 
 
@@ -196,5 +197,15 @@ public class DigestTest
         Digest digest2 = sha1();
 
         doJsonTest(json1, json2, digest1, digest2, true);
+    }
+
+
+    @Test
+    public void test9()
+    {
+        String expected = "KuAUcjF9GTWoR5fsGYOuJD/Gqig=";
+        String actual = sha1().update("Hello, world.").digestAsString(new Base64());
+
+        assertEquals(expected, actual);
     }
 }
