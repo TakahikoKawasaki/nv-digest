@@ -904,6 +904,106 @@ public class Digest implements Cloneable
      * Update the wrapped {@code MessageDigest} object with the
      * given input data.
      *
+     * <p>
+     * This method is an alias of {@link #update(boolean)
+     * update}{@code (input.booleanValue())}.
+     * </p>
+     *
+     * @param input
+     *         Input data.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.4
+     */
+    public Digest update(Boolean input)
+    {
+        if (input == null)
+        {
+            return this;
+        }
+
+        return update(input.booleanValue());
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
+     * <p>
+     * This method is an alias of {@link #update(Boolean[], int, int)
+     * update}{@code (input, 0, input.length)}.
+     * </p>
+     *
+     * @param input
+     *         Input data. If null is given, update is not performed.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.4
+     */
+    public Digest update(Boolean[] input)
+    {
+        if (input == null)
+        {
+            return this;
+        }
+
+        return update(input, 0, input.length);
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
+     * <p>
+     * This method calls {@link #update(Boolean)} for each
+     * array element which is in the specified range.
+     * </p>
+     *
+     * @param input
+     *         Input data.
+     *
+     * @param offset
+     *         The offset to start from in the array.
+     *
+     * @param length
+     *         The number of elements to use, starting at offset.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @throws IllegalArgumentException
+     *         The range specified by the parameters is invalid.
+     *
+     * @since 1.4
+     */
+    public Digest update(Boolean[] input, int offset, int length)
+    {
+        if (input == null)
+        {
+            return this;
+        }
+
+        checkRange(input.length, offset, length);
+
+        for (int i = 0; i < length; ++i)
+        {
+            update(input[i + offset]);
+        }
+
+        return this;
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
      * @param input
      *         Input data. {@code true} results in {@link #update(byte)
      *         update}{@code ((byte)1)} and {@code false} results in
@@ -969,6 +1069,106 @@ public class Digest implements Cloneable
      *         The range specified by the parameters is invalid.
      */
     public Digest update(boolean[] input, int offset, int length)
+    {
+        if (input == null)
+        {
+            return this;
+        }
+
+        checkRange(input.length, offset, length);
+
+        for (int i = 0; i < length; ++i)
+        {
+            update(input[i + offset]);
+        }
+
+        return this;
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
+     * <p>
+     * This method is an alias of {@link #update(char)
+     * update}{@code (input.charValue())}.
+     * </p>
+     *
+     * @param input
+     *         Input data.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.4
+     */
+    public Digest update(Character input)
+    {
+        if (input == null)
+        {
+            return this;
+        }
+
+        return update(input.charValue());
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
+     * <p>
+     * This method is an alias of {@link #update(Character[], int, int)
+     * update}{@code (input, 0, input.length)}.
+     * </p>
+     *
+     * @param input
+     *         Input data. If null is given, update is not performed.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.4
+     */
+    public Digest update(Character[] input)
+    {
+        if (input == null)
+        {
+            return this;
+        }
+
+        return update(input, 0, input.length);
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
+     * <p>
+     * This method calls {@link #update(Character)} for each
+     * array element which is in the specified range.
+     * </p>
+     *
+     * @param input
+     *         Input data.
+     *
+     * @param offset
+     *         The offset to start from in the array.
+     *
+     * @param length
+     *         The number of elements to use, starting at offset.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @throws IllegalArgumentException
+     *         The range specified by the parameters is invalid.
+     *
+     * @since 1.4
+     */
+    public Digest update(Character[] input, int offset, int length)
     {
         if (input == null)
         {
@@ -1856,41 +2056,13 @@ public class Digest implements Cloneable
      * given input data.
      *
      * <p>
-     * This method checks the class of each element and calls
-     * a corresponding {@code update} method.
+     * This method calls {@link #update(Object)} for each element.
      * </p>
      *
-     * <table border="1" cellpadding="5" style="margin: 1em; border-collapse: collapse;">
-     *   <tr bgcolor="orange">
-     *     <th>Class of element</th>
-     *     <th>Executed code</th>
-     *   </tr>
-     *   <tr>
-     *     <td>{@code String}</td>
-     *     <td>{@link #update(String) update}{@code ((String)element)}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>{@code Number}</td>
-     *     <td>{@link #update(Number) update}{@code ((Number)element)}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>{@code Boolean}</td>
-     *     <td>{@link #update(boolean) update}{@code (((Boolean)element).booleanValue())}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>{@code Character}</td>
-     *     <td>{@link #update(char) update}{@code (((Character)element).charValue())}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>Others</td>
-     *     <td>Ignored.</td>
-     *   </tr>
-     * </table>
-     *
      * @param input
-     *         Input data. If null is given, update is not performed.
-     *         null elements are ignored. Elements of unsupported classes
-     *         are ignored, too.
+     *         Input data. If {@code null} is given, update is not performed.
+     *         {@code null} elements are ignored. Elements of unsupported
+     *         classes are ignored, too.
      *
      * @return
      *         {@code this} object.
@@ -1899,7 +2071,7 @@ public class Digest implements Cloneable
      */
     public Digest update(Iterable<?> input)
     {
-        if (input == this)
+        if (input == null)
         {
             return this;
         }
@@ -1911,26 +2083,167 @@ public class Digest implements Cloneable
                 continue;
             }
 
-            // String
-            if (element instanceof String)
+            update(element);
+        }
+
+        return this;
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
+     * <p>
+     * This method calls {@link #update(Object)} for each element.
+     * </p>
+     *
+     * @param input
+     *         Input data. If {@code null} is given, update is not performed.
+     *         {@code null} elements are ignored. Elements of unsupported
+     *         classes are ignored, too.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.4
+     */
+    public Digest update(Object... input)
+    {
+        if (input == null)
+        {
+            return this;
+        }
+
+        for (Object element : input)
+        {
+            if (element == null)
             {
-                update((String)element);
+                continue;
             }
-            // Number
-            else if (element instanceof Number)
-            {
-                update((Number)element);
-            }
-            // Boolean
-            else if (element instanceof Boolean)
-            {
-                update(((Boolean)element).booleanValue());
-            }
-            // Character
-            else if (element instanceof Character)
-            {
-                update(((Character)element).charValue());
-            }
+
+            update(element);
+        }
+
+        return this;
+    }
+
+
+    /**
+     * Update the wrapped {@code MessageDigest} object with the
+     * given input data.
+     *
+     * <p>
+     * This method checks the class of the given object and calls
+     * a corresponding {@code update} method.
+     * </p>
+     *
+     * @param input
+     *         Input data. If {@code null} is given, update is not performed.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.4
+     */
+    public Digest update(Object input)
+    {
+        if (input == null)
+        {
+            return this;
+        }
+
+        if (input instanceof String)
+        {
+            update((String)input);
+        }
+        else if (input instanceof String[])
+        {
+            update((String[])input);
+        }
+        else if (input instanceof Character)
+        {
+            update((Character)input);
+        }
+        else if (input instanceof Character[])
+        {
+            update((Character[])input);
+        }
+        else if (input instanceof Boolean)
+        {
+            update((Boolean)input);
+        }
+        else if (input instanceof boolean[])
+        {
+            update((boolean[])input);
+        }
+        else if (input instanceof Boolean[])
+        {
+            update((Boolean[])input);
+        }
+        else if (input instanceof Number)
+        {
+            update((Number)input);
+        }
+        else if (input instanceof byte[])
+        {
+            update((byte[])input);
+        }
+        else if (input instanceof Byte[])
+        {
+            update((Byte[])input);
+        }
+        else if (input instanceof ByteBuffer)
+        {
+            update((ByteBuffer)input);
+        }
+        else if (input instanceof char[])
+        {
+            update((char[])input);
+        }
+        else if (input instanceof double[])
+        {
+            update((double[])input);
+        }
+        else if (input instanceof Double[])
+        {
+            update((Double[])input);
+        }
+        else if (input instanceof float[])
+        {
+            update((float[])input);
+        }
+        else if (input instanceof Float[])
+        {
+            update((Float[])input);
+        }
+        else if (input instanceof int[])
+        {
+            update((int[])input);
+        }
+        else if (input instanceof Integer[])
+        {
+            update((Integer[])input);
+        }
+        else if (input instanceof long[])
+        {
+            update((long[])input);
+        }
+        else if (input instanceof Long[])
+        {
+            update((Long[])input);
+        }
+        else if (input instanceof short[])
+        {
+            update((short[])input);
+        }
+        else if (input instanceof Short[])
+        {
+            update((Short[])input);
+        }
+        else if (input instanceof Iterable<?>)
+        {
+            update((Iterable<?>)input);
         }
 
         return this;

@@ -21,8 +21,10 @@ import static com.neovisionaries.security.Digest.Feature.SORT_JSON_OBJECT_ENTRY_
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.codec.binary.Base64;
@@ -207,5 +209,271 @@ public class DigestTest
         String actual = sha1().update("Hello, world.").digestAsString(new Base64());
 
         assertEquals(expected, actual);
+    }
+
+
+    @Test
+    public void test10()
+    {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(10);
+        byteBuffer.put(new byte[] { 1, 2, 3, 4, 5});
+        byteBuffer.flip();
+
+        // Ensure there is no infinite loop.
+        Digest.getInstanceSHA256().update(
+                "Hello, world.",
+                new String[] { "Hello", "world" },
+
+                Boolean.TRUE,
+                new boolean[] { true, false },
+                new Boolean[] { Boolean.TRUE, Boolean.FALSE },
+
+                Byte.valueOf((byte)0),
+                new byte[] { (byte)0, (byte)1 },
+                new Byte[] { Byte.valueOf((byte)0), Byte.valueOf((byte)1) },
+                byteBuffer,
+
+                Character.valueOf('b'),
+                new char[] { 'a', 'b' },
+                new Character[] { Character.valueOf('a'), Character.valueOf('b') },
+
+                Double.valueOf(0.0),
+                new double[] { 0.0, 1.0 },
+                new Double[] { Double.valueOf(0.0), Double.valueOf(1.0) },
+
+                Float.valueOf(0.0F),
+                new float[] { 0.0F, 1.0F },
+                new Float[] { Float.valueOf(0.0F), Float.valueOf(1.0F) },
+
+                Integer.valueOf(1),
+                new int[] { 1, 2 },
+                new Integer[] { Integer.valueOf(0), Integer.valueOf(1) },
+
+                Long.valueOf(0L),
+                new long[] { 0L, 1L },
+                new Long[] { Long.valueOf(0L), Long.valueOf(1L) },
+
+                Short.valueOf((short)0),
+                new short[] { (short)0, (short)1 },
+                new Short[] { Short.valueOf((short)0), Short.valueOf((short)1) },
+
+                new Object[] { new boolean[] { true, false }, new byte[] { (byte)0, (byte)1 } },
+                new Object[] {
+                    new Object[] { new char[] { 'a', 'b' }, new short[] { 10, 20 } },
+                    new Object[] { new float[] { 1.0F, 2.0F }, new double[] { 3.0, 4.0 } }
+                }
+                );
+
+        assertTrue(true);
+    }
+
+
+    @Test
+    public void test11()
+    {
+        List<Boolean> list = new ArrayList<Boolean>();
+        list.add(Boolean.TRUE);
+        list.add(Boolean.FALSE);
+        list.add(Boolean.TRUE);
+
+        String digest1 = md5().update(list).digestAsString();
+
+        String digest2 = md5()
+                .update(true)
+                .update(false)
+                .update(true)
+                .digestAsString();
+
+        String digest3 = md5()
+                .update(new boolean[] { true, false, true })
+                .digestAsString();
+
+        String digest4 = md5()
+                .update(true, false, true)
+                .digestAsString();
+
+        assertEquals(digest1, digest2);
+        assertEquals(digest1, digest3);
+        assertEquals(digest1, digest4);
+    }
+
+
+    @Test
+    public void test12()
+    {
+        List<Character> list = new ArrayList<Character>();
+        list.add(Character.valueOf('a'));
+        list.add(Character.valueOf('b'));
+        list.add(Character.valueOf('c'));
+
+        String digest1 = md5().update(list).digestAsString();
+
+        String digest2 = md5()
+                .update('a')
+                .update('b')
+                .update('c')
+                .digestAsString();
+
+        String digest3 = md5()
+                .update(new char[] { 'a', 'b', 'c' })
+                .digestAsString();
+
+        String digest4 = md5()
+                .update('a', 'b', 'c')
+                .digestAsString();
+
+        assertEquals(digest1, digest2);
+        assertEquals(digest1, digest3);
+        assertEquals(digest1, digest4);
+    }
+
+
+    @Test
+    public void test13()
+    {
+        List<Double> list = new ArrayList<Double>();
+        list.add(Double.valueOf(0.0));
+        list.add(Double.valueOf(1.1));
+        list.add(Double.valueOf(2.2));
+
+        String digest1 = md5().update(list).digestAsString();
+
+        String digest2 = md5()
+                .update(0.0)
+                .update(1.1)
+                .update(2.2)
+                .digestAsString();
+
+        String digest3 = md5()
+                .update(new double[] { 0.0, 1.1, 2.2 })
+                .digestAsString();
+
+        String digest4 = md5()
+                .update(0.0, 1.1, 2.2)
+                .digestAsString();
+
+        assertEquals(digest1, digest2);
+        assertEquals(digest1, digest3);
+        assertEquals(digest1, digest4);
+    }
+
+
+    @Test
+    public void test14()
+    {
+        List<Float> list = new ArrayList<Float>();
+        list.add(Float.valueOf(0.0F));
+        list.add(Float.valueOf(1.1F));
+        list.add(Float.valueOf(2.2F));
+
+        String digest1 = md5().update(list).digestAsString();
+
+        String digest2 = md5()
+                .update(0.0F)
+                .update(1.1F)
+                .update(2.2F)
+                .digestAsString();
+
+        String digest3 = md5()
+                .update(new float[] { 0.0F, 1.1F, 2.2F })
+                .digestAsString();
+
+        String digest4 = md5()
+                .update(0.0F, 1.1F, 2.2F)
+                .digestAsString();
+
+        assertEquals(digest1, digest2);
+        assertEquals(digest1, digest3);
+        assertEquals(digest1, digest4);
+    }
+
+
+    @Test
+    public void test15()
+    {
+        List<Integer> list = new ArrayList<Integer>();
+        list.add(Integer.valueOf(100));
+        list.add(Integer.valueOf(200));
+        list.add(Integer.valueOf(300));
+
+        String digest1 = md5().update(list).digestAsString();
+
+        String digest2 = md5()
+                .update(100)
+                .update(200)
+                .update(300)
+                .digestAsString();
+
+        String digest3 = md5()
+                .update(new int[] { 100, 200, 300 })
+                .digestAsString();
+
+        String digest4 = md5()
+                .update(100, 200, 300)
+                .digestAsString();
+
+        assertEquals(digest1, digest2);
+        assertEquals(digest1, digest3);
+        assertEquals(digest1, digest4);
+    }
+
+
+    @Test
+    public void test16()
+    {
+        List<Long> list = new ArrayList<Long>();
+        list.add(Long.valueOf(1000L));
+        list.add(Long.valueOf(2000L));
+        list.add(Long.valueOf(3000L));
+
+        String digest1 = md5().update(list).digestAsString();
+
+        String digest2 = md5()
+                .update(1000L)
+                .update(2000L)
+                .update(3000L)
+                .digestAsString();
+
+        String digest3 = md5()
+                .update(new long[] { 1000L, 2000L, 3000L })
+                .digestAsString();
+
+        String digest4 = md5()
+                .update(1000L, 2000L, 3000L)
+                .digestAsString();
+
+        assertEquals(digest1, digest2);
+        assertEquals(digest1, digest3);
+        assertEquals(digest1, digest4);
+    }
+
+
+    @Test
+    public void test17()
+    {
+        List<Short> list = new ArrayList<Short>();
+        list.add(Short.valueOf((short)10));
+        list.add(Short.valueOf((short)20));
+        list.add(Short.valueOf((short)30));
+
+        String digest1 = md5().update(list).digestAsString();
+
+        String digest2 = md5()
+                .update((short)10)
+                .update((short)20)
+                .update((short)30)
+                .digestAsString();
+
+        String digest3 = md5()
+                .update(new short[] { 10, 20, 30 })
+                .digestAsString();
+
+        String digest4 = md5()
+                .update((short)10, (short)20, (short)30)
+                .digestAsString();
+
+        assertEquals(digest1, digest2);
+        assertEquals(digest1, digest3);
+        assertEquals(digest1, digest4);
     }
 }
