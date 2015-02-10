@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 Neo Visionaries Inc.
+ * Copyright (C) 2013-2015 Neo Visionaries Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,9 +91,9 @@ public class Digest implements Cloneable
     public static enum Feature
     {
         /**
-         * Ignore JSON key-value entries whose value is null.
-         * In other words, treat JSON key-value entries whose
-         * value is null as if they did not exist.
+         * Ignore JSON key-value entries whose value is {@code null}.
+         * In other words, JSON key-value entries whose value is
+         * {@code null} are treated as if they did not exist.
          *
          * <p>
          * If this feature is enabled, two JSONs below generate
@@ -110,6 +110,126 @@ public class Digest implements Cloneable
          * </p>
          */
         IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_NULL,
+
+
+        /**
+         * Ignore JSON key-value entries whose value is {@code false}.
+         * In other words, JSON key-value entries whose value is
+         * {@code false} are treated as if they did not exist.
+         *
+         * <p>
+         * If this feature is enabled, two JSONs below generate
+         * the same digest value.
+         * </p>
+         *
+         * <pre>
+         * { "key1":"value1", "key2":false }
+         * { "key1":"value1" }
+         * </pre>
+         *
+         * <p>
+         * The default value is 'disabled'.
+         * </p>
+         *
+         * @since 1.5
+         */
+        IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_FALSE,
+
+
+        /**
+         * Ignore JSON key-value entries whose value is zero.
+         * In other words, JSON key-value entries whose value is
+         * zero are treated as if they did not exist.
+         *
+         * <p>
+         * If this feature is enabled, two JSONs below generate
+         * the same digest value.
+         * </p>
+         *
+         * <pre>
+         * { "key1":"value1", "key2":0, "key3":0.0 }
+         * { "key1":"value1" }
+         * </pre>
+         *
+         * <p>
+         * The default value is 'disabled'.
+         * </p>
+         *
+         * @since 1.5
+         */
+        IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_ZERO,
+
+
+        /**
+         * Ignore JSON key-value entries whose value is an empty string.
+         * In other words, JSON key-value entries whose value is an empty
+         * string are treated as if they did not exist.
+         *
+         * <p>
+         * If this feature is enabled, two JSONs below generate
+         * the same digest value.
+         * </p>
+         *
+         * <pre>
+         * { "key1":"value1", "key2":"" }
+         * { "key1":"value1" }
+         * </pre>
+         *
+         * <p>
+         * The default value is 'disabled'.
+         * </p>
+         *
+         * @since 1.5
+         */
+        IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_STRING,
+
+
+        /**
+         * Ignore JSON key-value entries whose value is an empty array.
+         * In other words, JSON key-value entries whose value is an empty
+         * array are treated as if they did not exist.
+         *
+         * <p>
+         * If this feature is enabled, two JSONs below generate
+         * the same digest value.
+         * </p>
+         *
+         * <pre>
+         * { "key1":"value1", "key2":[] }
+         * { "key1":"value1" }
+         * </pre>
+         *
+         * <p>
+         * The default value is 'disabled'.
+         * </p>
+         *
+         * @since 1.5
+         */
+        IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_ARRAY,
+
+
+        /**
+         * Ignore JSON key-value entries whose value is an empty object.
+         * In other words, JSON key-value entries whose value is an empty
+         * object are treated as if they did not exist.
+         *
+         * <p>
+         * If this feature is enabled, two JSONs below generate
+         * the same digest value.
+         * </p>
+         *
+         * <pre>
+         * { "key1":"value1", "key2":{} }
+         * { "key1":"value1" }
+         * </pre>
+         *
+         * <p>
+         * The default value is 'disabled'.
+         * </p>
+         *
+         * @since 1.5
+         */
+        IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_OBJECT,
 
 
         /**
@@ -181,7 +301,12 @@ public class Digest implements Cloneable
     {
         HashMap<Feature, Boolean> map = new HashMap<Feature, Boolean>();
 
-        map.put(Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_NULL, Boolean.FALSE);
+        map.put(Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_NULL,         Boolean.FALSE);
+        map.put(Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_FALSE,        Boolean.FALSE);
+        map.put(Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_ZERO,         Boolean.FALSE);
+        map.put(Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_STRING, Boolean.FALSE);
+        map.put(Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_ARRAY,  Boolean.FALSE);
+        map.put(Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_OBJECT, Boolean.FALSE);
         map.put(Feature.SORT_JSON_OBJECT_ENTRY_KEYS, Boolean.TRUE);
 
         return map;

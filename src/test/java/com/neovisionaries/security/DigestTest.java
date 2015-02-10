@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 Neo Visionaries Inc.
+ * Copyright (C) 2013-2015 Neo Visionaries Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,12 @@
 package com.neovisionaries.security;
 
 
+import static com.neovisionaries.security.Digest.Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_ARRAY;
+import static com.neovisionaries.security.Digest.Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_OBJECT;
+import static com.neovisionaries.security.Digest.Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_STRING;
+import static com.neovisionaries.security.Digest.Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_FALSE;
 import static com.neovisionaries.security.Digest.Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_NULL;
+import static com.neovisionaries.security.Digest.Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_ZERO;
 import static com.neovisionaries.security.Digest.Feature.SORT_JSON_OBJECT_ENTRY_KEYS;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
@@ -475,5 +480,135 @@ public class DigestTest
         assertEquals(digest1, digest2);
         assertEquals(digest1, digest3);
         assertEquals(digest1, digest4);
+    }
+
+
+    @Test
+    public void test18()
+    {
+        String json1 = "{ \"key1\":\"value1\", \"key2\":false }";
+        String json2 = "{ \"key1\":\"value1\" }";
+
+        Digest digest1 = sha1().setEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_FALSE, true);
+        Digest digest2 = sha1();
+
+        doJsonTest(json1, json2, digest1, digest2, true);
+    }
+
+
+    @Test
+    public void test19()
+    {
+        String json1 = "{ \"key1\":\"value1\", \"key2\":true }";
+        String json2 = "{ \"key1\":\"value1\" }";
+
+        Digest digest1 = sha1().setEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_FALSE, true);
+        Digest digest2 = sha1();
+
+        doJsonTest(json1, json2, digest1, digest2, false);
+    }
+
+
+    @Test
+    public void test20()
+    {
+        String json1 = "{ \"key1\":\"value1\", \"key2\":0, \"key3\":0.0 }";
+        String json2 = "{ \"key1\":\"value1\" }";
+
+        Digest digest1 = sha1().setEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_ZERO, true);
+        Digest digest2 = sha1();
+
+        doJsonTest(json1, json2, digest1, digest2, true);
+    }
+
+
+    @Test
+    public void test21()
+    {
+        String json1 = "{ \"key1\":\"value1\", \"key2\":0, \"key3\":1.23 }";
+        String json2 = "{ \"key1\":\"value1\" }";
+
+        Digest digest1 = sha1().setEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_ZERO, true);
+        Digest digest2 = sha1();
+
+        doJsonTest(json1, json2, digest1, digest2, false);
+    }
+
+
+    @Test
+    public void test22()
+    {
+        String json1 = "{ \"key1\":\"value1\", \"key2\":\"\" }";
+        String json2 = "{ \"key1\":\"value1\" }";
+
+        Digest digest1 = sha1().setEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_STRING, true);
+        Digest digest2 = sha1();
+
+        doJsonTest(json1, json2, digest1, digest2, true);
+    }
+
+
+    @Test
+    public void test23()
+    {
+        String json1 = "{ \"key1\":\"value1\", \"key2\":\"value2\" }";
+        String json2 = "{ \"key1\":\"value1\" }";
+
+        Digest digest1 = sha1().setEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_STRING, true);
+        Digest digest2 = sha1();
+
+        doJsonTest(json1, json2, digest1, digest2, false);
+    }
+
+
+    @Test
+    public void test24()
+    {
+        String json1 = "{ \"key1\":\"value1\", \"key2\":[] }";
+        String json2 = "{ \"key1\":\"value1\" }";
+
+        Digest digest1 = sha1().setEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_ARRAY, true);
+        Digest digest2 = sha1();
+
+        doJsonTest(json1, json2, digest1, digest2, true);
+    }
+
+
+    @Test
+    public void test25()
+    {
+        String json1 = "{ \"key1\":\"value1\", \"key2\":[ null ] }";
+        String json2 = "{ \"key1\":\"value1\" }";
+
+        Digest digest1 = sha1().setEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_ARRAY, true);
+        Digest digest2 = sha1();
+
+        doJsonTest(json1, json2, digest1, digest2, false);
+    }
+
+
+    @Test
+    public void test26()
+    {
+        String json1 = "{ \"key1\":\"value1\", \"key2\":{} }";
+        String json2 = "{ \"key1\":\"value1\" }";
+
+        Digest digest1 = sha1().setEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_OBJECT, true);
+        Digest digest2 = sha1();
+
+        doJsonTest(json1, json2, digest1, digest2, true);
+    }
+
+
+    @Test
+    public void test27()
+    {
+        String json1 = "{ \"key1\":\"value1\", \"key2\":{ \"key\":null } }";
+        String json2 = "{ \"key1\":\"value1\" }";
+
+        Digest digest1 = sha1().setEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_OBJECT, true);
+        Digest digest2 = sha1();
+
+        doJsonTest(json1, json2, digest1, digest2, false);
     }
 }

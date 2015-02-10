@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Neo Visionaries Inc.
+ * Copyright (C) 2014-2015 Neo Visionaries Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,16 @@
 package com.neovisionaries.security;
 
 
+import static com.neovisionaries.security.Digest.Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_ARRAY;
+import static com.neovisionaries.security.Digest.Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_OBJECT;
+import static com.neovisionaries.security.Digest.Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_STRING;
+import static com.neovisionaries.security.Digest.Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_FALSE;
 import static com.neovisionaries.security.Digest.Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_NULL;
+import static com.neovisionaries.security.Digest.Feature.IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_ZERO;
 import static com.neovisionaries.security.Digest.Feature.SORT_JSON_OBJECT_ENTRY_KEYS;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -39,8 +46,13 @@ class JsonDigestUpdater
 {
     private Digest digest;
     private StringBuilder path;
-    private boolean ignoreJsonObjectEntryWithNull;
-    private boolean sortJsonObjectEntryKeys;
+    private boolean ignoreNull;
+    private boolean ignoreFalse;
+    private boolean ignoreZero;
+    private boolean ignoreEmptyString;
+    private boolean ignoreEmptyArray;
+    private boolean ignoreEmptyObject;
+    private boolean sortKeys;
 
 
     public Digest update(Digest digest, String json) throws IOException
@@ -52,8 +64,13 @@ class JsonDigestUpdater
         this.path = new StringBuilder();
 
         // Copy configuration.
-        this.ignoreJsonObjectEntryWithNull = digest.isEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_NULL);
-        this.sortJsonObjectEntryKeys = digest.isEnabled(SORT_JSON_OBJECT_ENTRY_KEYS);
+        this.ignoreNull        = digest.isEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_NULL);
+        this.ignoreFalse       = digest.isEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_FALSE);
+        this.ignoreZero        = digest.isEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_ZERO);
+        this.ignoreEmptyString = digest.isEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_STRING);
+        this.ignoreEmptyArray  = digest.isEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_ARRAY);
+        this.ignoreEmptyObject = digest.isEnabled(IGNORE_JSON_OBJECT_ENTRY_WITH_VALUE_EMPTY_OBJECT);
+        this.sortKeys          = digest.isEnabled(SORT_JSON_OBJECT_ENTRY_KEYS);
 
         // Convert JSON to a node tree.
         JsonNode root = createTree(json);
@@ -179,9 +196,9 @@ class JsonDigestUpdater
 
     private void updateObjectEntry(String name, JsonNode value)
     {
-        if (ignoreJsonObjectEntryWithNull && value.isNull())
+        if (shouldIgnore(value))
         {
-            // The value of the field is null. Ignore this entry.
+            // Ignore this entry.
             return;
         }
 
@@ -202,12 +219,103 @@ class JsonDigestUpdater
     }
 
 
+    private boolean shouldIgnore(JsonNode value)
+    {
+        if (ignoreNull && value.isNull())
+        {
+            // The value of the field is null. Ignore this entry.
+            return true;
+        }
+
+        if (ignoreFalse && value.isBoolean())
+        {
+            // Ignore this entry if its value is false.
+            return value.asBoolean() == false;
+        }
+
+        if (ignoreZero && value.isNumber())
+        {
+            // Ignore this entry if its value is zero.
+            return isZero(value);
+        }
+
+        if (ignoreEmptyString && value.isTextual())
+        {
+            // Ignore this entry if its value is an empty string.
+            return value.textValue().length() == 0;
+        }
+
+        if (ignoreEmptyArray && value.isArray())
+        {
+            // Ignore this entry if its value is an empty array.
+            return value.size() == 0;
+        }
+
+        if (ignoreEmptyObject && value.isObject())
+        {
+            // Ignore this entry if its value is an empty object.
+            return value.size() == 0;
+        }
+
+        // Should not ignore.
+        return false;
+    }
+
+
+    private boolean isZero(JsonNode value)
+    {
+        // int
+        if (value.isInt() && value.intValue() == 0)
+        {
+            return true;
+        }
+
+        // long
+        if (value.isLong() && value.longValue() == 0)
+        {
+            return true;
+        }
+
+        // short
+        if (value.isShort() && value.shortValue() == 0)
+        {
+            return true;
+        }
+
+        // float
+        if (value.isFloat() && value.floatValue() == 0.0F)
+        {
+            return true;
+        }
+
+        // double
+        if (value.isDouble() && value.doubleValue() == 0.0)
+        {
+            return true;
+        }
+
+        // BigInteger
+        if (value.isBigInteger() && value.bigIntegerValue().equals(BigInteger.ZERO))
+        {
+            return true;
+        }
+
+        // BigDecimal
+        if (value.isBigDecimal() && value.decimalValue().equals(BigDecimal.ZERO))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+
     private List<String> getFieldNames(JsonNode node)
     {
         // Generate a list of field names.
         List<String> list = iteratorToList(node.fieldNames());
 
-        if (sortJsonObjectEntryKeys)
+        if (sortKeys)
         {
             // Sort on field names.
             Collections.sort(list);

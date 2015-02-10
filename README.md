@@ -70,7 +70,7 @@ Maven
 <dependency>
     <groupId>com.neovisionaries</groupId>
     <artifactId>nv-digest</artifactId>
-    <version>1.4</version>
+    <version>1.5</version>
 </dependency>
 ```
 
