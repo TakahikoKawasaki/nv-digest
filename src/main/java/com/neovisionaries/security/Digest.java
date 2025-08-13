@@ -720,6 +720,10 @@ public class Digest implements Cloneable
      *
      * @return
      *         The resulting hash value.
+     *
+     * @throws DigestException
+     *         The {@code digest} method of the {@link MessageDigest} class
+     *         failed.
      */
     public int digest(byte[] output, int offset, int length) throws DigestException
     {
@@ -1880,8 +1884,9 @@ public class Digest implements Cloneable
      * calls a corresponding {@code update} method.
      * </p>
      *
-     * <table border="1" cellpadding="5" style="margin: 1em; border-collapse: collapse;">
-     *   <tr bgcolor="orange">
+     * <table border="1" style="margin: 1em; border-collapse: collapse; padding: 5px;">
+     *   <caption></caption>
+     *   <tr style="background-color: orange;">
      *     <th>Class</th>
      *     <th>Executed code</th>
      *   </tr>
@@ -2010,6 +2015,9 @@ public class Digest implements Cloneable
      * update}{@code (input, 0, input.length)}.
      * </p>
      *
+     * @param <TNumber>
+     *         The subclass of the {@link Number} class.
+     *
      * @param input
      *         Input data. If null is given, update is not performed.
      *
@@ -2037,6 +2045,9 @@ public class Digest implements Cloneable
      * This method calls {@link #update(Number)} for each
      * array element which is in the specified range.
      * </p>
+     *
+     * @param <TNumber>
+     *         The subclass of the {@link Number} class.
      *
      * @param input
      *         Input data.
@@ -2476,6 +2487,7 @@ public class Digest implements Cloneable
      * Convert the given byte array to a hex string.
      *
      * @param bytes
+     *         A byte array to convert.
      *
      * @return
      *         A hex string with 0-9 and a-f.
