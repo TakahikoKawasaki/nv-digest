@@ -9,7 +9,7 @@
 
     <groupId>com.neovisionaries</groupId>
     <artifactId>nv-digest</artifactId>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.6</version>
     <packaging>jar</packaging>
     <name>Neo Visionaries Message Digest Utility</name>
     <description>Message digest utility</description>
